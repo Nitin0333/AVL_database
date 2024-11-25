@@ -1,7 +1,3 @@
-#define NodeFound 200
-#define Nodenotfound 404
-
-
 struct avlnode {
 	string key, value;
 	struct avlnode *left, *right;
@@ -16,7 +12,7 @@ struct avlnode {
 };
 
 struct avltree {
-	avlnode * root;
+	avlnode* root;
 	
 	// INITIALIZATION
 	avltree(avlnode *root = NULL) {
@@ -27,10 +23,11 @@ struct avltree {
 	// INSERTION
 	avlnode* internal_insert(avlnode* cur, string& key, string& value) {
 		if (cur == NULL) {
+			flag = INS_SUCC;
 			return new avlnode(key, value);
 		}
 		else if (cur->key == key) {
-			cout << "Key already exists select different key" << endl;
+			flag = INS_DUP;
 		}
 		else if (cur->key < key) {
 			cur->right = internal_insert(cur->right, key, value);
@@ -41,6 +38,7 @@ struct avltree {
 		return cur;
 	}
 	void insert(string& key, string& value) {
+		flag = INS_ERROR;
 		this->root = internal_insert(this->root, key, value);
 	}
 	
@@ -48,11 +46,13 @@ struct avltree {
 	// DELETION
 	avlnode* internal_delete(avlnode* cur, string& key) {
 		if (cur == NULL) {
-			cout << key << " not found" << endl;
+			flag = DEL_NTFND;
 		}
 		
 		// Node found condition
 		else if (cur->key == key) {
+			flag = DEL_SUCC;
+
 			// Node is leaf
 			if (cur->left == NULL && cur->right == NULL) {
 				delete(cur);
@@ -92,14 +92,17 @@ struct avltree {
 		return cur;
 	}
 	void remove(string& key) {
+		flag = DEL_ERROR;
 		this->root = internal_delete(this->root, key);
 	}
 	
 	// SEARCHING
 	avlnode* search(string& key) {
+		flag = SER_NTFND;
 		avlnode* temp = root;
 		while (temp != NULL) {
 			if (temp->key == key) {
+				flag = SER_SUCC;
 				break;
 			}
 			else if (temp->key < key) {
@@ -132,7 +135,7 @@ struct avltree {
 			return;
 		
 		internal_inorder(cur->left);
-		cout << '{' << cur->key << ", " << cur->value << '}' << " ";
+		res.push_back({cur->key, cur->value});
 		internal_inorder(cur->right);
 	}
 	void inorder() {
