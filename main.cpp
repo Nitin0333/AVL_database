@@ -78,7 +78,7 @@ void save_database() {
 	database.close();
 }
 
-avlnode* load_node(avlnode* node) {
+avlnode* load_node(avlnode* cur) {
 	if (!db.empty() && db.front() != "NULL") {
 		string key = "";
 		buffer = db.front();
@@ -89,17 +89,67 @@ avlnode* load_node(avlnode* node) {
 			j++;
 		}
 		j++;
-		node = new avlnode();
-		node->key = key;
-		node->value = buffer.substr(j);
-		node->left = load_node(node->left);
-		node->right = load_node(node->right);
+		cur = new avlnode();
+		cur->key = key;
+		cur->value = buffer.substr(j);
+		cur->left = load_node(cur->left);
+		cur->right = load_node(cur->right);
+		
+		tree->calc(cur);
+		// BALANCING
+		if (cur->bfactor == 2) {
+			avlnode* temp = cur->left;
+			if (temp->bfactor == 1) {
+				cur->left = temp->right;
+				temp->right = cur;
+
+				tree->calc(cur);
+				tree->calc(temp);
+				cur = temp;
+			}
+			else {
+				avlnode* temp2 = temp->right;
+				temp->right = temp2->left;
+				temp2->left = temp;
+				cur->left = temp2->right;
+				temp2->right = cur;
+
+				tree->calc(cur);
+				tree->calc(temp);
+				tree->calc(temp2);
+				cur = temp2;
+			}
+		}
+		else if (cur->bfactor == -2) {
+			avlnode* temp = cur->right;
+			if (temp->bfactor == -1) {
+				cur->right = temp->left;
+				temp->left = cur;
+
+				tree->calc(cur);
+				tree->calc(temp);
+				cur = temp;
+			}
+			else {
+				avlnode* temp2 = temp->left;
+				cur->right = temp2->left;
+				temp2->left = cur;
+				temp->left = temp2->right;
+				temp2->right = temp;
+
+				tree->calc(temp);
+				tree->calc(cur);
+				tree->calc(temp2);
+				cur = temp2;
+			}
+		}
+
 	}
 	else {
 		if (!db.empty())
 			db.pop_front();
 	}
-	return node;
+	return cur;
 }
 
 void load_database() {
@@ -245,7 +295,7 @@ int main() {
 
 			// Exit command
 			else if (commands.size() == 1 && commands[0] == "exit") {
-				cout << start << "Successfully exited the database" << endl;
+				cout << start << "Successfully exited the database";
 				break;
 			}
 
